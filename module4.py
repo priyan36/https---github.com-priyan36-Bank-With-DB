@@ -289,7 +289,7 @@ class Bank:
         update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
         try:
             with self.db.cursor() as cursor:
-                cursor.execute(query, (accno,))
+                cursor.execute(query, (accno,))                                            #this car function is not working properly
                 result = cursor.fetchone()
                 trans_amt = result[0] if result[0] is not None else 0
                 if trans_amt > 100000:
