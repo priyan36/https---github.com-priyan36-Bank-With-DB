@@ -1,10 +1,14 @@
 import os
+import math
 from mysql import connector
 from dotenv import load_dotenv
+from prettytable import PrettyTable
 
 load_dotenv()
 
-crt_table_query = [
+
+
+create_table_queries = [
     """CREATE TABLE IF NOT EXISTS bankdata (
         name VARCHAR(30),
         accNo INT PRIMARY KEY,
@@ -17,13 +21,14 @@ crt_table_query = [
         transtype VARCHAR(20),
         amount INT,
         balance INT,
-        FOREIGN KEY (accNo) REFERENCES bankdata (accNo)
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (accNo) REFERENCES bankdata(accNo)
     )""",
     """CREATE TABLE IF NOT EXISTS bankcreditscr (
         accNo INT PRIMARY KEY,
         credit INT,
         membership VARCHAR(25),
-        FOREIGN KEY (accNo) REFERENCES bankdata (accNo)
+        FOREIGN KEY (accNo) REFERENCES bankdata(accNo)
     )"""
 ]
 
@@ -46,9 +51,10 @@ try:
         ) as database:
             
             with database.cursor() as cursor:
-                for query in crt_table_query:
+                
+                for query in create_table_queries:
                     cursor.execute(query)
-                    print(f"Executed: {query}")
+                    
                 database.commit()
 
 except connector.Error as e:
@@ -95,13 +101,10 @@ class Bank:
         except connector.Error as e:
             print(e)
 
-
-
-
     def deposit(self, accno, depamt):
         bal_query = "SELECT balance FROM bankdata WHERE accNo = %s"
         update_query = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
-        trans_query = "INSERT INTO banktrans (accNo, transtype, amount, balance) VALUES (%s, %s, %s, %s)"
+        trans_query = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
 
         try:
             with self.db.cursor() as cursor:
@@ -117,13 +120,10 @@ class Bank:
         except connector.Error as e:
             print(e)
 
-
-
-
     def withdraw(self, accno, witamt):
         bal_query = "SELECT balance FROM bankdata WHERE accNo = %s"
         update_query = "UPDATE bankdata SET balance = balance - %s WHERE accNo = %s"
-        trans_query = "INSERT INTO banktrans (accNo, transtype, amount, balance) VALUES (%s, %s, %s, %s)"
+        trans_query = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
 
         try:
             with self.db.cursor() as cursor:
@@ -147,9 +147,6 @@ class Bank:
         except connector.Error as e:
             print(e)
 
-
-
-
     def fd(self, accno, fdamt, yrs):
         idx = None
         for i in self.data:
@@ -170,9 +167,6 @@ class Bank:
         else:
             print("FD should be above 50000")
 
-
-
-
     def transaction(self, accno):
         query = "SELECT * FROM banktrans WHERE accNo = %s ORDER BY transId DESC LIMIT 5"
 
@@ -184,14 +178,14 @@ class Bank:
                 if not result:
                     print("No Transaction Found.")
                 else:
-                    for i in result:
-                        print(i)
+                    table = PrettyTable()
+                    table.field_names = ["Transaction ID", "Account No", "Transaction Type", "Amount", "Balance", "Timestamp"]
+                    for row in result:
+                        table.add_row(row)
+                    print(table)
 
         except connector.Error as e:
             print(e)
-
-
-
 
     def update_creditscore(self, accno):
         query = "SELECT COUNT(*) FROM banktrans WHERE accNo = %s"
@@ -250,4 +244,295 @@ class Bank:
 
 
 
+    def bike(self,accno,bike_value,model_year):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 25000:
+                    if bike_value <= 90000 or model_year <= 2020:
+                        loan_amt = bike_value - 30000
+                        cursor.execute(update_balance, (loan_amt,accno))
+                        self.db.commit()
+                        cursor.execute(new_balance, (accno,))
+                        balance = cursor.fetchone()[0]
+                        cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                        self.db.commit()
+                        print("Your loan is approved. The loan amount is credited to your account.")
+                        print("Your balance Rs.",balance)
+                    elif bike_value <= 150000 or model_year <= 2024:
+                        loan_amt = bike_value - 20000
+                        cursor.execute(update_balance, (loan_amt,accno))
+                        self.db.commit()
+                        cursor.execute(new_balance, (accno,))
+                        balance = cursor.fetchone()[0]
+                        print("Your loan is approved. The loan amount is credited to your account.")
+                        print("Your balance Rs.",balance)
+                else:
+                    print("You are not eligible for bike loan yet.")
 
+        except connector.Error as e:
+            print(e)
+
+
+
+
+    def car(self,accno,car_value,model_year):   #changethecode
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 100000:
+                    if car_value <= 500000 and model_year <= 2020:
+                        loan_amt = car_value - 30000
+                        cursor.execute(update_balance, (loan_amt,accno))
+                        self.db.commit()
+                        cursor.execute(new_balance, (accno,))
+                        balance = cursor.fetchone()[0]
+                        cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                        self.db.commit()
+                        print("Your loan is approved. The loan amount is credited to your account.")
+                        print("Your balance Rs.",balance)
+                    elif car_value <= 150000 and model_year <= 2024:
+                        loan_amt = car_value - 20000
+                        cursor.execute(update_balance, (loan_amt,accno))
+                        self.db.commit()
+                        cursor.execute(new_balance, (accno,))
+                        balance = cursor.fetchone()[0]
+                        print("Your loan is approved.The loan amount is credited to your account.")
+                        print("Your balance Rs.",balance)
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+    def loan_purchase_of_land(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.75, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+
+    def loan_home_purchase(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.83, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()  #roundup
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+    def loan_home_construction(self, accno, loan_amt, loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+    
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    monthly_interest_rate = 0.91 / 12  # Correct monthly interest rate calculation
+                    num_payments = loan_term * 12  # Correct loan term in months
+                    emi = (loan_amt * monthly_interest_rate * math.pow(1 + monthly_interest_rate, num_payments)) / \
+                          (math.pow(1 + monthly_interest_rate, num_payments) - 1)
+                    cursor.execute(update_balance, (loan_amt, accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.", balance)
+                    print("Your EMI is Rs.", emi)
+             
+                else:
+                     print("You are not eligible for a home construction loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+    def loan_home_extension(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.1, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+    def loan_home_improvement(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.6, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+    def loan_personal(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.6, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()                                                                #not updating transaction table
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
+
+
+
+    def loan_education(self,accno,loan_amt,loan_term):
+        query = "SELECT SUM(amount) AS trans_amt FROM banktrans WHERE accNo = %s"
+        update_balance = "UPDATE bankdata SET balance = balance + %s WHERE accNo = %s"
+        new_balance = "SELECT balance FROM bankdata WHERE accNo = %s"
+        update_trans = "INSERT INTO banktrans (accNo, transtype, amount, balance, timestamp) VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP)"
+        
+        try:
+            with self.db.cursor() as cursor:
+                cursor.execute(query, (accno,))
+                result = cursor.fetchone()
+                trans_amt = result[0] if result[0] is not None else 0
+                if trans_amt > 1000000:
+                    emi = ( loan_amt * 0.75 * math.pow(1 + 0.6, loan_term)) / (math.pow(1 + 0.75, loan_term) - 1)
+                    cursor.execute(update_balance, (loan_amt,accno))
+                    self.db.commit()
+                    cursor.execute(new_balance, (accno,))
+                    balance = cursor.fetchone()[0]
+                    cursor.execute(update_trans, (accno, 'Loan Credit', loan_amt, balance))
+                    self.db.commit()
+                    print("Your loan is approved. The loan amount is credited to your account.")
+                    print("Your balance Rs.",balance)
+                    print("Your EMI is Rs.",emi)
+                 
+                else:
+                    print("You are not eligible for car loan yet.")
+
+        except connector.Error as e:
+            print(e)
