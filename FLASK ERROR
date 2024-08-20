@@ -1,15 +1,17 @@
-from flask import Flask, render_template
+from flask import Flask
+from flask import render_template
 from flask_sqlalchemy import SQLAlchemy
+
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///market.db"
 db = SQLAlchemy(app) 
 
-class item(db.model):
-    id = db.column(db.integer(), primary_key = True)
-    name = db.column(db.string(length=30), nullable = False, unique = True)
-    price = db.column(db.integer(), nullable = False)
-    barcode = db.column(db.string(length = 12), nullable = False, unique = True)
-    description = db.column(db.string(length = 1000), nullable = False, unique = True)
+class Item(db.Model):
+    id = db.Column(db.Integer, primary_key=True)   # Changed 'column' to 'Column' and 'integer' to 'Integer'
+    name = db.Column(db.String(length=30), nullable=False, unique=True)   # Changed 'string' to 'String'
+    price = db.Column(db.Integer, nullable=False)   # Changed 'integer' to 'Integer'
+    barcode = db.Column(db.String(length=12), nullable=False, unique=True)   # Changed 'string' to 'String'
+    description = db.Column(db.String(length=1000), nullable=False, unique=True)   # Changed 'string' to 'String'
 
 @app.route("/")
 @app.route("/home")
@@ -23,9 +25,7 @@ def market_page():
     {'id': 2, 'name': 'Laptop', 'barcode': '123985473165', 'price': 900},
     {'id': 3, 'name': 'Keyboard', 'barcode': '231985128446', 'price': 150}
 ]
-    return render_template("market.html", items = items)
-
-
+    return render_template("market.html", items=items)
 
 
 
@@ -34,58 +34,14 @@ def market_page():
 
 POWERSHELL COMMANDS:-
 
-PS C:\Python312\00Flask\FlaskMarket> pip install flask-sqlalchemy
-Collecting flask-sqlalchemy
-  Downloading flask_sqlalchemy-3.1.1-py3-none-any.whl.metadata (3.4 kB)
-Requirement already satisfied: flask>=2.2.5 in c:\program files\python312\lib\site-packages (from flask-sqlalchemy) (3.0.3)
-Collecting sqlalchemy>=2.0.16 (from flask-sqlalchemy)
-  Downloading SQLAlchemy-2.0.32-cp312-cp312-win_amd64.whl.metadata (9.8 kB)
-Requirement already satisfied: Werkzeug>=3.0.0 in c:\program files\python312\lib\site-packages (from flask>=2.2.5->flask-sqlalchemy) (3.0.3)
-Requirement already satisfied: Jinja2>=3.1.2 in c:\program files\python312\lib\site-packages (from flask>=2.2.5->flask-sqlalchemy) (3.1.4)
-Requirement already satisfied: itsdangerous>=2.1.2 in c:\program files\python312\lib\site-packages (from flask>=2.2.5->flask-sqlalchemy) (2.2.0)
-Requirement already satisfied: click>=8.1.3 in c:\program files\python312\lib\site-packages (from flask>=2.2.5->flask-sqlalchemy) (8.1.7)
-Requirement already satisfied: blinker>=1.6.2 in c:\program files\python312\lib\site-packages (from flask>=2.2.5->flask-sqlalchemy) (1.8.2)
-Collecting typing-extensions>=4.6.0 (from sqlalchemy>=2.0.16->flask-sqlalchemy)
-  Downloading typing_extensions-4.12.2-py3-none-any.whl.metadata (3.0 kB)
-Collecting greenlet!=0.4.17 (from sqlalchemy>=2.0.16->flask-sqlalchemy)
-  Downloading greenlet-3.0.3-cp312-cp312-win_amd64.whl.metadata (3.9 kB)
-Requirement already satisfied: colorama in c:\program files\python312\lib\site-packages (from click>=8.1.3->flask>=2.2.5->flask-sqlalchemy) (0.4.6)
-Requirement already satisfied: MarkupSafe>=2.0 in c:\program files\python312\lib\site-packages (from Jinja2>=3.1.2->flask>=2.2.5->flask-sqlalchemy) (2.1.5)
-Downloading flask_sqlalchemy-3.1.1-py3-none-any.whl (25 kB)
-Downloading SQLAlchemy-2.0.32-cp312-cp312-win_amd64.whl (2.1 MB)
-   ---------------------------------------- 2.1/2.1 MB 4.9 MB/s eta 0:00:00
-Downloading greenlet-3.0.3-cp312-cp312-win_amd64.whl (293 kB)
-   ---------------------------------------- 293.6/293.6 kB 3.6 MB/s eta 0:00:00
-Downloading typing_extensions-4.12.2-py3-none-any.whl (37 kB)
-Installing collected packages: typing-extensions, greenlet, sqlalchemy, flask-sqlalchemy
-Successfully installed flask-sqlalchemy-3.1.1 greenlet-3.0.3 sqlalchemy-2.0.32 typing-extensions-4.12.2
 
-[notice] A new release of pip is available: 24.1.2 -> 24.2
-[notice] To update, run: python.exe -m pip install --upgrade pip
-
-
-
-
-
-PS C:\Python312\00Flask\FlaskMarket> python  #####################command
+PS C:\Python312\00Flask\FlaskMarket> python
 Python 3.12.3 (tags/v3.12.3:f6650f9, Apr  9 2024, 14:05:25) [MSC v.1938 64 bit (AMD64)] on win32
 Type "help", "copyright", "credits" or "license" for more information.
->>> from market import db   #####################command       
->>> db.create_all()         #####################command
-Traceback (most recent call last):
-  File "<stdin>", line 1, in <module>
-  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 900, in create_all
-    self._call_for_binds(bind_key, "create_all")
-  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 871, in _call_for_binds
-    engine = self.engines[key]
-             ^^^^^^^^^^^^
-  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 687, in engines
-    app = current_app._get_current_object()  # type: ignore[attr-defined]
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "C:\Program Files\Python312\Lib\site-packages\werkzeug\local.py", line 519, in _get_current_object
-    raise RuntimeError(unbound_message) from None
-RuntimeError: Working outside of application context.
+>>> from market import app, db
+>>> with app.app_context():            ############# i have added this lines because The error you're encountering is due to trying to access the database outside of an application context. In Flask, certain operations like database manipulation require the application context to be active. You can resolve this by using app.app_context() to set up the context before calling db.create_all().
+...     db.create_all()
+...
+>>>
 
-This typically means that you attempted to use functionality that needed
-the current application. To solve this, set up an application context
-with app.app_context(). See the documentation for more information.
+############################ when i execute these commands it should create new db file in VS Code named "market.db". But for me there is no file created. and also doesn't show any error in the powershell as well.
