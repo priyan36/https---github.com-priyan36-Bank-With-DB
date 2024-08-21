@@ -1,3 +1,4 @@
+
 from market import app, Item
 Traceback (most recent call last):
   File "<stdin>", line 1, in <module>
@@ -53,3 +54,73 @@ ValueError: invalid literal for int() with base 10: ''
 ...
 [<Item 1>, <Item 2>]
 >>> exit()
+
+
+
+
+
+
+
+
+
+###############################
+PS C:\Python312\00Flask\FlaskMarket> $env:FLASK_APP = "market.py"
+PS C:\Python312\00Flask\FlaskMarket> flask run
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Program Files\Python312\Scripts\flask.exe\__main__.py", line 7, in <module>
+  File "C:\Program Files\Python312\Lib\site-packages\flask\cli.py", line 1105, in main
+    cli.main()
+  File "C:\Program Files\Python312\Lib\site-packages\click\core.py", line 1078, in main
+    rv = self.invoke(ctx)
+         ^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\click\core.py", line 1688, in invoke
+    return _process_result(sub_ctx.command.invoke(sub_ctx))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\click\core.py", line 1434, in invoke
+    return ctx.invoke(self.callback, **ctx.params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\click\core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\click\decorators.py", line 92, in new_func
+    return ctx.invoke(f, obj, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\click\core.py", line 783, in invoke
+    return __callback(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\flask\cli.py", line 953, in run_command
+    raise e from None
+  File "C:\Program Files\Python312\Lib\site-packages\flask\cli.py", line 937, in run_command
+    app: WSGIApplication = info.load_app()
+                           ^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\flask\cli.py", line 335, in load_app
+    app = locate_app(import_name, name)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\flask\cli.py", line 245, in locate_app
+    __import__(module_name)
+  File "C:\Python312\00Flask\FlaskMarket\market.py", line 7, in <module>
+    db = SQLAlchemy(app)
+         ^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 278, in __init__
+    self.init_app(app)
+  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 373, in init_app
+    self._apply_driver_defaults(options, app)
+  File "C:\Program Files\Python312\Lib\site-packages\flask_sqlalchemy\extension.py", line 607, in _apply_driver_defaults
+    url = sa.engine.make_url(options["url"])
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\sqlalchemy\engine\url.py", line 842, in make_url
+    return _parse_url(name_or_url)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\sqlalchemy\engine\url.py", line 905, in _parse_url
+    return URL.create(name, **components)  # type: ignore
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\sqlalchemy\engine\url.py", line 211, in create
+    cls._assert_port(port),
+    ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python312\Lib\site-packages\sqlalchemy\engine\url.py", line 221, in _assert_port
+    return int(port)
+           ^^^^^^^^^
+ValueError: invalid literal for int() with base 10: ''
+PS C:\Python312\00Flask\FlaskMarket>
