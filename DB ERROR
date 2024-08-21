@@ -24,3 +24,32 @@ Traceback (most recent call last):
     return int(port)
            ^^^^^^^^^
 ValueError: invalid literal for int() with base 10: ''
+
+
+
+
+
+
+
+
+
+
+###########################
+>>> from market import app, Item
+>>> with app.app_context():
+...     Item.query.all()
+...
+[<Item 1>]
+>>> item2 = Item(name="Laptop", price=700, barcode="75847565", description="The Best laptop")
+>>> from market import app, db, Item
+>>> with app.app_context():
+...     item2 = Item(name="Laptop", price=700, barcode="75847565", description="The Best laptop")
+...     db.session.add(item2)
+...     db.session.commit()
+...
+>>> from market import app, Item
+>>> with app.app_context():
+...     Item.query.all()
+...
+[<Item 1>, <Item 2>]
+>>> exit()
